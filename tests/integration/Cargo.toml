@@ -1,5 +1,5 @@
 [package]
-name = "simple-rust-test"
+name = "rust-integration-test"
 version = "0.1.0"
 authors = ["tchataigner <contact@polyphene.io>"]
 edition = "2018"
