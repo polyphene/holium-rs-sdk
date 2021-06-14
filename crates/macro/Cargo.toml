@@ -1,0 +1,13 @@
+[package]
+name = "holium-macro"
+version = "0.1.0"
+authors = ["tchataigner <contact@polyphene.io>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0.9"
+syn = "1.0.72"
+trybuild = "1.0.42"
