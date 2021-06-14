@@ -5,11 +5,13 @@ authors = ["tchataigner <contact@polyphene.io>"]
 edition = "2018"
 
 [dependencies]
+holium-macro = { path = "crates/macro", version = "=0.1.0" }
 serde = { version = "1.0.125", features = ["derive"] }
 serde_derive = "1.0"
 serde_json = { version = "1.0.64" }
 
 [workspace]
 members = [
-    "tests/rust"
+    "crates/macro",
+    "tests/integration"
     ]
