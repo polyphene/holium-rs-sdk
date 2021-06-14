@@ -1,0 +1,5 @@
+error: cannot return a borrowed ref with #[holium_bindgen]
+  --> $DIR/export.rs:56:25
+   |
+56 | pub fn bad1(a: &str) -> &String {
+   |                         ^^^^^^^

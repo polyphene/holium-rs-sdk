@@ -20,5 +20,4 @@ Holium runtime. The procedural macro will also generate a transformation file co
 The SDK expose a procedural macro, `holium_bindgen`, that can be used to expose functions to the Holium protocol form
 a wasm runtime. The procedural macro is in charge of generating a wrapper around all exposed functions so that functions
 argument and return values are retrieved and written on the host running the transformation.
-
 <!-- TODO: complete with example of proc macro application, generated code & file  -->
