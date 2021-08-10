@@ -16,6 +16,44 @@ trait ConvertToAst {
     fn convert(self) -> Result<Self::Target, Diagnostic>;
 }
 
+impl<'a> ConvertToAst for &'a mut syn::ItemStruct {
+    type Target = ast::Struct;
+
+    fn convert(self) -> Result<Self::Target, Diagnostic> {
+        if self.generics.params.len() > 0 {
+            bail_span!(
+                self.generics,
+                "structs with #[holium_bindgen] cannot have lifetime or \
+                 type parameters currently"
+            );
+        }
+        let mut fields = Vec::new();
+        for (i, field) in self.fields.iter_mut().enumerate() {
+            match field.vis {
+                syn::Visibility::Public(..) => {}
+                _ => continue,
+            }
+            let (name, member) = match &field.ident {
+                Some(ident) => (ident.to_string(), syn::Member::Named(ident.clone())),
+                None => (i.to_string(), syn::Member::Unnamed(i.into())),
+            };
+
+            fields.push(ast::StructField {
+                rust_name: member,
+                name,
+                struct_name: self.ident.clone(),
+                ty: field.ty.clone(),
+            });
+        }
+        Ok(ast::Struct {
+            rust_name: self.ident.clone(),
+            name: self.ident.to_string(),
+            fields,
+        })
+    }
+}
+
+
 impl ConvertToAst for syn::ItemFn {
     type Target = ast::Function;
 
@@ -131,11 +169,15 @@ impl<'a> MacroParse<&'a mut TokenStream> for syn::Item {
                     rust_class: None,
                     rust_name,
                 });
+            },
+            syn::Item::Struct(mut s) => {
+                program.structs.push((&mut s).convert()?);
+                s.to_tokens(tokens);
             }
             _ => {
                 bail_span!(
                     self,
-                    "#[holium_bindgen] can only be applied to a public function",
+                    "#[holium_bindgen] can only be applied to a public function or struct",
                 );
             }
         }

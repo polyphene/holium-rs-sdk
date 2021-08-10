@@ -28,11 +28,40 @@ impl TryToTokens for ast::Program {
             }
         }
 
+        for s in self.structs.iter() {
+            s.to_tokens(tokens);
+        }
+
         Diagnostic::from_vec(errors)?;
 
         Ok(())
     }
 }
+
+impl ToTokens for ast::Struct {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let name = &self.rust_name;
+        let name_str = self.name.to_string();
+
+        // TODO generate tokens here for structs
+
+        for field in self.fields.iter() {
+            field.to_tokens(tokens);
+        }
+    }
+}
+
+impl ToTokens for ast::StructField {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let rust_name = &self.rust_name;
+        let struct_name = &self.struct_name;
+        let ty = &self.ty;
+
+        // TODO generate tokens here for fields
+
+    }
+}
+
 impl TryToTokens for ast::Export {
     fn try_to_tokens(self: &ast::Export, into: &mut TokenStream) -> Result<(), Diagnostic> {
         let generated_name = self.rust_symbol();
