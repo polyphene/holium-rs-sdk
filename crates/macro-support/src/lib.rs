@@ -11,7 +11,7 @@ use proc_macro2::TokenStream;
 
 mod parser;
 
-/// Takes the parsed input f rom a `#[holium_bindgen]` macro and returns the generated bindings
+/// Takes the parsed input from a `#[holium_bindgen]` macro and returns the generated bindings
 pub fn expand(input: TokenStream) -> Result<TokenStream, Diagnostic> {
     let item = syn::parse2::<syn::Item>(input)?;
 

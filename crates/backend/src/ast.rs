@@ -6,8 +6,10 @@ use syn;
 #[cfg_attr(feature = "extra-traits", derive(Debug))]
 #[derive(Default, Clone)]
 pub struct Program {
-    /// rust -> js interfaces
+    /// rust func
     pub exports: Vec<Export>,
+    /// rust structs
+    pub structs: Vec<Struct>,
 }
 
 impl Program {
@@ -68,6 +70,33 @@ pub struct Function {
     pub arguments: Vec<syn::PatType>,
     /// The return type of the function, if provided
     pub ret: Option<syn::Type>,
+}
+
+/// Information about a Struct being exported
+#[cfg_attr(feature = "extra-traits", derive(Debug, PartialEq, Eq))]
+#[derive(Clone)]
+pub struct Struct {
+    /// The name of the struct in Rust code
+    pub rust_name: Ident,
+    /// The name of the struct in JS code
+    pub name: String,
+    /// All the fields of this struct to export
+    pub fields: Vec<StructField>,
+}
+
+
+/// The field of a struct
+#[cfg_attr(feature = "extra-traits", derive(Debug, PartialEq, Eq))]
+#[derive(Clone)]
+pub struct StructField {
+    /// The name of the field in Rust code
+    pub rust_name: syn::Member,
+    /// The name of the field in code
+    pub name: String,
+    /// The name of the struct this field is part of
+    pub struct_name: Ident,
+    /// The type of this field
+    pub ty: syn::Type,
 }
 
 impl Export {
