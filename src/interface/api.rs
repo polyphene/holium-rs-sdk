@@ -1,9 +1,7 @@
 /*********************************************************
  * The interface module is the library that can be used in a Wasm runtime to interact with an host.
- * TODO As of now the host has to expose some functions. If not implemented this lib will not work. Any other way possible ?
  *********************************************************/
 
-// TODO @PhilippeMts we used serde for the sake of development speed, should we think of something else
 use serde::*;
 
 /// ExecutionError represents all error that might have happened on the host
