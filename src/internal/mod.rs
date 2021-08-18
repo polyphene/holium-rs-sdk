@@ -4,6 +4,7 @@
 pub use serde::{Deserialize, Serialize};
 
 pub mod data_tree;
+pub mod key_tree;
 
 #[allow(dead_code)]
 mod host_interface;
