@@ -3,6 +3,7 @@
  *********************************************************/
 
 use serde::*;
+use crate::internal::data_tree::Node;
 
 /// ExecutionError represents all error that might have happened on the host
 #[derive(Debug, thiserror::Error)]
@@ -21,10 +22,10 @@ pub enum ExecutionError {
     UnknownError,
 }
 
-impl From<crate::interface::utils::Error> for ExecutionError {
-    fn from(e: crate::interface::utils::Error) -> Self {
+impl From<crate::internal::host_interface::Error> for ExecutionError {
+    fn from(e: crate::internal::host_interface::Error) -> Self {
         match e {
-            crate::interface::utils::Error::HoliumError(errno) => match errno {
+            crate::internal::host_interface::Error::HoliumError(errno) => match errno {
                 1 => ExecutionError::InvalidIndexError,
                 2 => ExecutionError::NoContentError,
                 3 => ExecutionError::OutOfMemoryError,
@@ -47,7 +48,7 @@ pub fn set_payload<T>(output_index: &str, payload: &T) -> Result<(), ExecutionEr
 
     let output_index_slice = serde_json::to_vec(output_index)?;
     let payload_slice = serde_json::to_vec(&payload)?;
-    crate::interface::utils::set_payload(
+    crate::internal::host_interface::set_payload(
         output_index_slice.as_ptr(),
         output_index_slice.len(),
         payload_slice.as_ptr(),
@@ -58,7 +59,7 @@ pub fn set_payload<T>(output_index: &str, payload: &T) -> Result<(), ExecutionEr
 }
 
 /// Function meant to be a generic deserializer for any data retrieved from a storage on the host.
-pub fn get_payload<T: serde::de::DeserializeOwned>(input_index: &str) -> Result<T, ExecutionError> {
+pub fn get_payload<T: serde::de::DeserializeOwned>(input_index: &str) -> Result<Node, ExecutionError> {
     if input_index.len() == 0 {
         return Err(ExecutionError::InvalidIndexError);
     }
@@ -68,14 +69,15 @@ pub fn get_payload<T: serde::de::DeserializeOwned>(input_index: &str) -> Result<
     let capacity = 64 * 1024;
     let mut buf = vec![0u8; capacity];
 
-    return match crate::interface::utils::get_payload(
+    return match crate::internal::host_interface::get_payload(
         input_index_slice.as_ptr(),
         input_index_slice.len(),
         buf.as_mut_ptr(),
     ) {
         Ok(written) => {
             buf.truncate(written);
-            Ok(serde_json::from_slice(&buf)?)
+            let payload_data = serde_cbor::from_slice(&buf)?;
+            Ok(payload_data)
         }
         Err(e) => Err(e.into()),
     };
