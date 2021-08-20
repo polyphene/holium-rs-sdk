@@ -1,12 +1,11 @@
 //! Data trees are responsible for recursively holding holium data. Leaves hold scalar CBOR values
 //! while non-leaf nodes point to ordered children.
 
+use crate::internal::key_tree::Node as KeyNode;
 use anyhow::Result;
 use serde_cbor::to_vec;
 use serde_cbor::Value as CborValue;
-use crate::KeyNode;
 use std::collections::BTreeMap;
-use crate::internal::key_tree::KeyNode;
 
 #[derive(Clone, Debug, PartialEq)]
 /// Value held by the leaf of a data tree
@@ -43,10 +42,16 @@ impl Node {
     /// Create a data tree from a Cbor value
     pub fn new(src_value: CborValue) -> Self {
         fn new_leaf(v: Value) -> Node {
-            Node { value: Some(v), children: vec![] }
+            Node {
+                value: Some(v),
+                children: vec![],
+            }
         }
         fn new_non_leaf(children: Vec<Node>) -> Node {
-            Node { value: None, children }
+            Node {
+                value: None,
+                children,
+            }
         }
 
         match src_value {
@@ -57,9 +62,13 @@ impl Node {
             CborValue::Bytes(v) => new_leaf(Value::Bytes(v)),
             CborValue::Text(v) => new_leaf(Value::Text(v)),
             CborValue::Tag(_, boxed_value) => Self::new(*boxed_value),
-            CborValue::Array(values) => new_non_leaf(values.into_iter().map(|v| Self::new(v)).collect()),
-            CborValue::Map(tree_map) => new_non_leaf(tree_map.into_values().map(|v| Self::new(v)).collect()),
-            CborValue::__Hidden => unreachable!()
+            CborValue::Array(values) => {
+                new_non_leaf(values.into_iter().map(|v| Self::new(v)).collect())
+            }
+            CborValue::Map(tree_map) => {
+                new_non_leaf(tree_map.into_values().map(|v| Self::new(v)).collect())
+            }
+            CborValue::__Hidden => unreachable!(),
         }
     }
 
@@ -73,14 +82,17 @@ impl Node {
 
                     for (i, child) in self.children.iter().enumerate() {
                         let key = &key_node.children[i];
-                        map.insert(CborValue::Text(String::from(key.value.unwrap())),child.assign_keys(key));
+                        map.insert(
+                            CborValue::Text(String::from(key.value.unwrap())),
+                            child.assign_keys(key),
+                        );
                     }
 
                     CborValue::Map(map)
                 } else {
                     let mut cbor_values: Vec<CborValue> = Vec::new();
                     for node in self.children.iter() {
-                        cbor_values.push(node.assign_keys(&KeyNode {value: None, children: &[]}));
+                        cbor_values.push(node.assign_keys(&KeyNode::default()));
                     }
                     CborValue::Array(cbor_values)
                 }
@@ -91,9 +103,11 @@ impl Node {
 
 #[cfg(test)]
 mod tests {
+    use serde::Serialize;
+    use serde_cbor::value::to_value;
     use std::collections::BTreeMap;
-    use serde_cbor::value::{to_value};
-    use serde::{Serialize};
+
+    use crate::internal::key_tree::GenerateNode;
 
     use super::*;
 
@@ -101,7 +115,10 @@ mod tests {
     fn can_represent_null_value() {
         assert_eq!(
             Node::new(CborValue::Null),
-            Node { value: Some(Value::Null), children: vec![] }
+            Node {
+                value: Some(Value::Null),
+                children: vec![]
+            }
         )
     }
 
@@ -109,11 +126,17 @@ mod tests {
     fn can_represent_boolean_value() {
         assert_eq!(
             Node::new(CborValue::from(true)),
-            Node { value: Some(Value::Bool(true)), children: vec![] }
+            Node {
+                value: Some(Value::Bool(true)),
+                children: vec![]
+            }
         );
         assert_eq!(
             Node::new(CborValue::from(false)),
-            Node { value: Some(Value::Bool(false)), children: vec![] }
+            Node {
+                value: Some(Value::Bool(false)),
+                children: vec![]
+            }
         )
     }
 
@@ -121,9 +144,7 @@ mod tests {
     fn can_represent_array() {
         assert_eq!(
             Node::new(CborValue::from(vec![
-                CborValue::from(vec![
-                    CborValue::Null
-                ]),
+                CborValue::from(vec![CborValue::Null]),
                 CborValue::Null,
             ])),
             Node {
@@ -131,11 +152,15 @@ mod tests {
                 children: vec![
                     Node {
                         value: None,
-                        children: vec![
-                            Node { value: Some(Value::Null), children: vec![] }
-                        ],
+                        children: vec![Node {
+                            value: Some(Value::Null),
+                            children: vec![]
+                        }],
                     },
-                    Node { value: Some(Value::Null), children: vec![] },
+                    Node {
+                        value: Some(Value::Null),
+                        children: vec![]
+                    },
                 ],
             }
         )
@@ -144,17 +169,15 @@ mod tests {
     #[test]
     fn can_represent_map() {
         let mut tree_map = BTreeMap::new();
-        tree_map.insert(
-            CborValue::Null,
-            CborValue::Integer(0),
-        );
+        tree_map.insert(CborValue::Null, CborValue::Integer(0));
         assert_eq!(
             Node::new(CborValue::from(tree_map)),
             Node {
                 value: None,
-                children: vec![
-                    Node { value: Some(Value::Integer(0)), children: vec![] },
-                ],
+                children: vec![Node {
+                    value: Some(Value::Integer(0)),
+                    children: vec![]
+                },],
             }
         )
     }
@@ -162,11 +185,11 @@ mod tests {
     #[test]
     fn can_import_tagged_value() {
         assert_eq!(
-            Node::new(CborValue::Tag(
-                0,
-                Box::from(CborValue::Null),
-            )),
-            Node { value: Some(Value::Null), children: vec![] }
+            Node::new(CborValue::Tag(0, Box::from(CborValue::Null),)),
+            Node {
+                value: Some(Value::Null),
+                children: vec![]
+            }
         )
     }
 
@@ -174,81 +197,82 @@ mod tests {
     fn can_assign_map() {
         #[derive(Eq, PartialEq, Serialize)]
         struct Structure {
-            key: NestedStructure
+            key: NestedStructure,
+        }
+        // This code is generated in the wasm module while compiling
+        impl GenerateNode for Structure {
+            fn generate_node() -> KeyNode {
+                KeyNode {
+                    value: None,
+                    children: vec![KeyNode {
+                        value: Some("key"),
+                        children: NestedStructure::generate_node().children,
+                    }],
+                }
+            }
         }
 
         #[derive(Eq, PartialEq, Serialize)]
         struct NestedStructure {
-            key: u8
+            key: u8,
         }
 
         // This code is generated in the wasm module while compiling
-        const STRUCTURE_KEYS: KeyNode = KeyNode {
-            value: None,
-            children: &[
+        impl GenerateNode for NestedStructure {
+            fn generate_node() -> KeyNode {
                 KeyNode {
-                    value: Some("key"),
-                    children: NESTED_STRUCTURE_KEYS.children
+                    value: None,
+                    children: vec![KeyNode {
+                        value: Some("key"),
+                        children: u8::generate_node().children,
+                    }],
                 }
-            ]
-        };
-
-        // This code is generated in the wasm module while compiling
-        const NESTED_STRUCTURE_KEYS: KeyNode = KeyNode {
-            value: None,
-            children: &[
-                KeyNode {
-                    value: Some("key"),
-                    children: &[]
-                }
-            ]
-        };
+            }
+        }
 
         let structure = Structure {
-            key: NestedStructure {
-                key: 0
-            }
+            key: NestedStructure { key: 0 },
         };
 
         let structure_cbor = to_value(structure).unwrap();
 
         let structure_data = Node::new(structure_cbor.clone());
 
-        let structure_assigned = structure_data.assign_keys(&STRUCTURE_KEYS);
+        let structure_assigned = structure_data.assign_keys(&Structure::generate_node());
 
         assert_eq!(structure_cbor, structure_assigned);
-
     }
 
     #[test]
     fn can_assign_array() {
         #[derive(Eq, PartialEq, Serialize)]
         struct Structure {
-            key: Vec<u8>
+            key: Vec<u8>,
         }
 
         // This code is generated in the wasm module while compiling
-        const STRUCTURE_KEYS: KeyNode = KeyNode {
-            value: None,
-            children: &[
+        impl GenerateNode for Structure {
+            fn generate_node() -> KeyNode {
                 KeyNode {
-                    value: Some("key"),
-                    children: &[]
+                    value: None,
+                    children: vec![KeyNode {
+                        value: Some("key"),
+                        children: Vec::<u8>::generate_node().children,
+                    }],
                 }
-            ]
-        };
+            }
+        }
 
         let structure = Structure {
-            key: vec![0, 1, 2 , 3]
+            key: vec![0, 1, 2, 3],
         };
 
         let structure_cbor = to_value(structure).unwrap();
 
         let structure_data = Node::new(structure_cbor.clone());
 
-        let structure_assigned = structure_data.assign_keys(&STRUCTURE_KEYS);
+        let structure_assigned = structure_data.assign_keys(&Structure::generate_node());
 
         assert_eq!(structure_cbor, structure_assigned);
-
     }
 }
