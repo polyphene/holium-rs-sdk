@@ -1,9 +1,10 @@
 /*********************************************************
  * The interface module is the library that can be used in a Wasm runtime to interact with an host.
+ * TODO As of now the host has to expose some functions. If not implemented this lib will not work. Any other way possible ?
  *********************************************************/
 
+// TODO @PhilippeMts we used serde for the sake of development speed, should we think of something else
 use serde::*;
-use crate::internal::data_tree::Node;
 
 /// ExecutionError represents all error that might have happened on the host
 #[derive(Debug, thiserror::Error)]
@@ -59,7 +60,7 @@ pub fn set_payload<T>(output_index: &str, payload: &T) -> Result<(), ExecutionEr
 }
 
 /// Function meant to be a generic deserializer for any data retrieved from a storage on the host.
-pub fn get_payload<T: serde::de::DeserializeOwned>(input_index: &str) -> Result<Node, ExecutionError> {
+pub fn get_payload<T: serde::de::DeserializeOwned>(input_index: &str) -> Result<T, ExecutionError> {
     if input_index.len() == 0 {
         return Err(ExecutionError::InvalidIndexError);
     }
@@ -76,8 +77,7 @@ pub fn get_payload<T: serde::de::DeserializeOwned>(input_index: &str) -> Result<
     ) {
         Ok(written) => {
             buf.truncate(written);
-            let payload_data = serde_cbor::from_slice(&buf)?;
-            Ok(payload_data)
+            Ok(serde_json::from_slice(&buf)?)
         }
         Err(e) => Err(e.into()),
     };
