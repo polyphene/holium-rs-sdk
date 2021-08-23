@@ -78,7 +78,7 @@ pub struct Function {
 pub struct Struct {
     /// The name of the struct in Rust code
     pub rust_name: Ident,
-    /// The name of the struct in JS code
+    /// The name of the struct for Holium
     pub name: String,
     /// All the fields of this struct to export
     pub fields: Vec<StructField>,

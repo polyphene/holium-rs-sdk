@@ -1,8 +1,9 @@
 use backend::ast;
 use backend::Diagnostic;
-use proc_macro2::{TokenStream};
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
+use syn::Attribute;
 
 /// Conversion trait with context.
 ///
@@ -27,6 +28,7 @@ impl<'a> ConvertToAst for &'a mut syn::ItemStruct {
                  type parameters currently"
             );
         }
+
         let mut fields = Vec::new();
         for (i, field) in self.fields.iter_mut().enumerate() {
             match field.vis {
@@ -52,7 +54,6 @@ impl<'a> ConvertToAst for &'a mut syn::ItemStruct {
         })
     }
 }
-
 
 impl ConvertToAst for syn::ItemFn {
     type Target = ast::Function;
@@ -169,7 +170,7 @@ impl<'a> MacroParse<&'a mut TokenStream> for syn::Item {
                     rust_class: None,
                     rust_name,
                 });
-            },
+            }
             syn::Item::Struct(mut s) => {
                 program.structs.push((&mut s).convert()?);
                 s.to_tokens(tokens);
