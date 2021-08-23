@@ -2,7 +2,6 @@
 //! while non-leaf nodes point to ordered children.
 
 use crate::internal::key_tree::Node as KeyNode;
-use anyhow::Result;
 use serde_cbor::to_vec;
 use serde_cbor::Value as CborValue;
 use std::collections::BTreeMap;

@@ -2,6 +2,7 @@
 /// Normally, you shouldn't use them.
 
 pub use serde::{Deserialize, Serialize};
+pub use serde_cbor;
 
 pub mod data_tree;
 pub mod key_tree;

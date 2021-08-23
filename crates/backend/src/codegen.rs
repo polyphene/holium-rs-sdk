@@ -1,14 +1,18 @@
 use crate::ast;
 use crate::Diagnostic;
+use heck::ShoutySnakeCase;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
+use std::borrow::Borrow;
+use std::hint::unreachable_unchecked;
 use syn;
+use syn::{parse_macro_input, Type};
 
 /// A trait for converting AST structs into Tokens and adding them to a TokenStream,
 /// or providing a diagnostic if conversion fails.
 pub trait TryToTokens {
     /// Attempt to convert a `Self` into tokens and add it to the `TokenStream`
-    fn try_to_tokens(&self, tokens: &mut TokenStream) -> Result<(), Diagnostic>;
+    fn try_to_tokens(&self, into: &mut TokenStream) -> Result<(), Diagnostic>;
 
     /// Attempt to convert a `Self` into a new `TokenStream`
     fn try_to_token_stream(&self) -> Result<TokenStream, Diagnostic> {
@@ -20,16 +24,16 @@ pub trait TryToTokens {
 
 impl TryToTokens for ast::Program {
     // Generate wrappers for all the items that we've found
-    fn try_to_tokens(&self, tokens: &mut TokenStream) -> Result<(), Diagnostic> {
+    fn try_to_tokens(&self, into: &mut TokenStream) -> Result<(), Diagnostic> {
         let mut errors = Vec::new();
         for export in self.exports.iter() {
-            if let Err(e) = export.try_to_tokens(tokens) {
+            if let Err(e) = export.try_to_tokens(into) {
                 errors.push(e);
             }
         }
 
         for s in self.structs.iter() {
-            s.to_tokens(tokens);
+            s.to_tokens(into);
         }
 
         Diagnostic::from_vec(errors)?;
@@ -39,15 +43,55 @@ impl TryToTokens for ast::Program {
 }
 
 impl ToTokens for ast::Struct {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
+    fn to_tokens(&self, into: &mut TokenStream) {
         let name = &self.rust_name;
-        let name_str = self.name.to_string();
 
-        // TODO generate tokens here for structs
+        // Add derive for serialize & deserialize
+        *into = (quote! {
+            #[derive(holium_rust_sdk::internal::Serialize, holium_rust_sdk::internal::Deserialize)]
+            #into
+        }).to_token_stream();
+
+
+        // For each filed of our structure add a new children node
+        let mut key_constant_tokens: Vec<TokenStream> = vec![];
 
         for field in self.fields.iter() {
-            field.to_tokens(tokens);
+            let field_name = field.name.to_string();
+            let field_type = &field.ty;
+
+            key_constant_tokens.push(quote! {
+                holium_rust_sdk::internal::key_tree::Node {
+                    value: Some(#field_name),
+                    children: <#field_type>::generate_node().children
+                }
+            });
         }
+
+        // Generating conversion from data_tree::Node to structure and implement key_tree::GenerateNode
+        // trait
+        (quote! {
+            impl holium_rust_sdk::internal::key_tree::GenerateNode for #name {
+                fn generate_node() -> holium_rust_sdk::internal::key_tree::Node {
+                    holium_rust_sdk::internal::key_tree::Node {
+                        value: None,
+                        children: vec![
+                            #(#key_constant_tokens),*
+                        ],
+                    }
+                }
+            }
+
+            impl From<holium_rust_sdk::internal::data_tree::Node> for #name {
+                fn from(data_tree: holium_rust_sdk::internal::data_tree::Node) -> Self {
+                    let key_node = <#name>::generate_node();
+                    let cbor = data_tree.assign_keys(&key_node);
+                    let cbor_bytes: Vec<u8> = internal::serde_cbor::to_vec(&cbor).unwrap();
+                    holium_rust_sdk::internal::serde_cbor::from_slice(&cbor_bytes).unwrap()
+                }
+            }
+        })
+        .to_tokens(into);
     }
 }
 
@@ -58,7 +102,6 @@ impl ToTokens for ast::StructField {
         let ty = &self.ty;
 
         // TODO generate tokens here for fields
-
     }
 }
 
@@ -73,7 +116,6 @@ impl TryToTokens for ast::Export {
         let name = &self.rust_name;
         let receiver = quote! { #name };
 
-
         for (i, arg) in self.function.arguments.iter().enumerate() {
             let i_string = format!("{}", i);
             let ident = Ident::new(&format!("arg{}", i), Span::call_site());
@@ -87,21 +129,21 @@ impl TryToTokens for ast::Export {
                 }) => {
                     arg_conversions.push(quote! {
                         //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                        let mut #ident: #elem  = holium_rust_sdk::interface::api::get_payload(#i_string).unwrap();
+                        let mut #ident: #elem  = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
                         let #ident: #ty = &mut #ident;
                     });
                 }
                 syn::Type::Reference(syn::TypeReference { elem, .. }) => {
-                    if  (quote! {#elem}).to_string() == "str" {
+                    if (quote! {#elem}).to_string() == "str" {
                         arg_conversions.push(quote! {
                             //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                            let #ident: String = holium_rust_sdk::interface::api::get_payload(#i_string).unwrap();
+                            let #ident: String = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
                             let #ident: #ty = #ident.as_str();
                         });
                     } else {
                         arg_conversions.push(quote! {
                             //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                            let #ident: #elem = holium_rust_sdk::interface::api::get_payload(#i_string).unwrap();
+                            let #ident: #elem = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
                             let #ident: #ty = &#ident;
                         });
                     }
@@ -109,13 +151,12 @@ impl TryToTokens for ast::Export {
                 _ => {
                     arg_conversions.push(quote! {
                         //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                        let #ident: #ty = holium_rust_sdk::interface::api::get_payload(#i_string).unwrap();
+                        let #ident: #ty = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
                     });
                 }
             }
             converted_arguments.push(quote! { #ident });
         }
-
 
         let syn_unit = syn::Type::Tuple(syn::TypeTuple {
             elems: Default::default(),
@@ -125,16 +166,19 @@ impl TryToTokens for ast::Export {
         // TODO handle all types, not only tuples
         let ret: TokenStream = match syn_ret {
             syn::Type::Reference(_) => {
-                bail_span!(syn_ret, "cannot return a borrowed ref with #[holium_bindgen]",)
-            },
+                bail_span!(
+                    syn_ret,
+                    "cannot return a borrowed ref with #[holium_bindgen]",
+                )
+            }
             syn::Type::Path(_) => {
                 let ident = Ident::new(&format!("ret{}", 0), Span::call_site());
                 let i_string = format!("{}", 0);
                 ret_conversions.push(quote! {
-                        holium_rust_sdk::interface::api::set_payload(#i_string, &#ident).unwrap();
-                    });
-                quote!{ #ident }
-            },
+                    holium_rust_sdk::internal::api::set_payload(#i_string, &#ident).unwrap();
+                });
+                quote! { #ident }
+            }
             syn::Type::Tuple(t) => {
                 let mut converted_returns: Vec<TokenStream> = vec![];
 
@@ -144,17 +188,17 @@ impl TryToTokens for ast::Export {
 
                     match elem {
                         syn::Type::Reference(_) => ret_conversions.push(quote! {
-                            holium_rust_sdk::interface::api::set_payload(#i_string, #ident).unwrap();
+                            holium_rust_sdk::internal::api::set_payload(#i_string, #ident).unwrap();
                         }),
                         _ => ret_conversions.push(quote! {
-                            holium_rust_sdk::interface::api::set_payload(#i_string, &#ident).unwrap();
+                            holium_rust_sdk::internal::api::set_payload(#i_string, &#ident).unwrap();
                         })
                     };
 
                     converted_returns.push(quote! { #ident });
                 }
                 quote! { (#(#converted_returns),*) }
-            },
+            }
             _ => {
                 bail_span!(
                 syn_ret,
