@@ -40,59 +40,32 @@ pub mod EXTERNAL_ERROR {
 /// Function to interact with the external `set_payload` function. It will set a value in a temporary
 /// storage inside the host memory.
 ///
-/// As the host will read value directly from the linear memory both `output_index` and `payload` are
-/// passed by pointers and length.
-pub fn set_payload(
-    output_index_ptr: HoliumPtr<u8>,
-    output_index_len: usize,
-    payload_ptr: HoliumPtr<u8>,
-    payload_len: usize,
-) -> Result<(), Error> {
+/// As the host will read value directly from the linear memory `payload` is passed by pointer and
+/// length.
+pub fn set_payload(payload_ptr: HoliumPtr<u8>, payload_len: usize) -> Result<(), Error> {
     extern "C" {
-        fn set_payload(
-            output_index_ptr: HoliumPtr<u8>,
-            output_index_len: usize,
-            payload_ptr: HoliumPtr<u8>,
-            payload_len: usize,
-        ) -> ExecutionError;
+        fn set_payload(payload_ptr: HoliumPtr<u8>, payload_len: usize) -> ExecutionError;
     }
-    let res: u32 =
-        unsafe { set_payload(output_index_ptr, output_index_len, payload_ptr, payload_len) };
+    let res: u32 = unsafe { set_payload(payload_ptr, payload_len) };
     if res != 0 {
         return Err(Error::HoliumError(res as _));
     }
     Ok(())
 }
 
-/// Function to interact with the external `get_payload` function. It will get a value from a temporary
-/// storage inside the host memory.
+/// Function to interact with the external `get_payload` function. It will get a value from the host memory.
 ///
-/// As the host will read value directly from the linear memory the `input_index` is passed by
-/// a pointer and a length. Pointer are also prepared for the payload and its length to be written on
-/// by the host.
-pub fn get_payload(
-    input_index_ptr: HoliumPtr<u8>,
-    input_index_len: usize,
-    payload_buf_ptr: HoliumMutPtr<u8>,
-) -> Result<WrittenBytes, Error> {
+/// Pointer are prepared for the payload and its length to be written on by the host.
+pub fn get_payload(payload_buf_ptr: HoliumMutPtr<u8>) -> Result<WrittenBytes, Error> {
     extern "C" {
         fn get_payload(
-            input_index_ptr: HoliumPtr<u8>,
-            input_index_len: usize,
             payload_buf_ptr: HoliumMutPtr<Char8>,
             result_ptr: HoliumMutPtr<WrittenBytes>,
         ) -> ExecutionError;
     }
 
     let mut result_ptr: MaybeUninit<usize> = std::mem::MaybeUninit::uninit();
-    let res: u32 = unsafe {
-        get_payload(
-            input_index_ptr,
-            input_index_len,
-            payload_buf_ptr,
-            result_ptr.as_mut_ptr(),
-        )
-    };
+    let res: u32 = unsafe { get_payload(payload_buf_ptr, result_ptr.as_mut_ptr()) };
     if res != 0 {
         return Err(Error::HoliumError(res as _));
     }

@@ -84,7 +84,6 @@ pub struct Struct {
     pub fields: Vec<StructField>,
 }
 
-
 /// The field of a struct
 #[cfg_attr(feature = "extra-traits", derive(Debug, PartialEq, Eq))]
 #[derive(Clone)]
@@ -100,7 +99,8 @@ pub struct StructField {
 }
 
 impl Export {
-    /// Generate unique function name for our exported Rust function
+    /// Generate unique function name for our exported Rust function. For a function named "main" the
+    /// resulting name will be "__holium_bindgen_generated_main"
     pub(crate) fn rust_symbol(&self) -> Ident {
         let mut generated_name = String::from("__holium_bindgen_generated");
         generated_name.push_str("_");
@@ -112,6 +112,6 @@ impl Export {
     /// ABI form of its arguments and converts them back into their normal,
     /// "high level" form before calling the actual function.
     pub(crate) fn export_name(&self) -> String {
-       self.function.name.to_string()
+        self.function.name.to_string()
     }
 }

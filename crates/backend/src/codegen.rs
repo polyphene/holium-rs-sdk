@@ -1,12 +1,8 @@
 use crate::ast;
 use crate::Diagnostic;
-use heck::ShoutySnakeCase;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
-use std::borrow::Borrow;
-use std::hint::unreachable_unchecked;
 use syn;
-use syn::{parse_macro_input, Type};
 
 /// A trait for converting AST structs into Tokens and adding them to a TokenStream,
 /// or providing a diagnostic if conversion fails.
@@ -21,7 +17,6 @@ pub trait TryToTokens {
         Ok(tokens)
     }
 }
-
 
 impl TryToTokens for ast::Program {
     // Generate wrappers for all the items that we've found
@@ -53,8 +48,8 @@ impl ToTokens for ast::Struct {
         *into = (quote! {
             #[derive(holium_rust_sdk::internal::Serialize, holium_rust_sdk::internal::Deserialize)]
             #into
-        }).to_token_stream();
-
+        })
+        .to_token_stream();
 
         // For each filed of our structure add a new children node
         let mut generate_node_children: Vec<TokenStream> = vec![];
@@ -100,124 +95,91 @@ impl ToTokens for ast::Struct {
 
 impl TryToTokens for ast::Export {
     fn try_to_tokens(self: &ast::Export, into: &mut TokenStream) -> Result<(), Diagnostic> {
-        let generated_name = self.rust_symbol();
-        let export_name = self.export_name();
         let mut input_payload_fields: Vec<TokenStream> = vec![];
         let mut input_payload_node_children: Vec<TokenStream> = vec![];
-        let mut converted_arguments: Vec<TokenStream> = vec![];
-        let mut ret_conversions: Vec<TokenStream> = vec![];
+        let mut converted_args: Vec<TokenStream> = vec![];
 
         let name = &self.rust_name;
         let receiver = quote! { #name };
 
+        let exported_name = &self.export_name();
+        let holium_func_name = &self.rust_symbol();
+
+        // First, generating inputs elements : input payload struct & function arguments
         for (i, arg) in self.function.arguments.iter().enumerate() {
             let field = format!("arg{}", i);
             let field_ident = Ident::new(&field, Span::call_site());
+            let input_ident = Ident::new(&format!("input"), Span::call_site());
             let ty = &arg.ty;
 
-            input_payload_fields.push(quote! {
-                #field_ident: #ty
-            });
-            input_payload_node_children.push(quote! {
-                holium_rust_sdk::internal::key_tree::Node {
-                    value: Some(#field),
-                    children: <#ty>::generate_node().children
-                }
-            });
-
-            /*match &*arg.ty {
+            match &*arg.ty {
+                // If argument type is mutable reference
                 syn::Type::Reference(syn::TypeReference {
                     mutability: Some(_),
                     elem,
                     ..
                 }) => {
-                    arg_conversions.push(quote! {
-                        //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                        let mut #ident: #elem  = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
-                        let #ident: #ty = &mut #ident;
+                    input_payload_fields.push(quote! {
+                        #field_ident: #elem
+                    });
+                    input_payload_node_children.push(quote! {
+                        holium_rust_sdk::internal::key_tree::Node {
+                            value: Some(#field),
+                            children: <#elem>::generate_node().children
+                        }
+                    });
+                    converted_args.push(quote! {
+                        &mut #input_ident.#field_ident
                     });
                 }
+                // If argument type is non-mutable reference
                 syn::Type::Reference(syn::TypeReference { elem, .. }) => {
+                    input_payload_fields.push(quote! {
+                        #field_ident: #elem
+                    });
+                    input_payload_node_children.push(quote! {
+                        holium_rust_sdk::internal::key_tree::Node {
+                            value: Some(#field),
+                            children: <#elem>::generate_node().children
+                        }
+                    });
+                    // If argument type is non-mutable reference but a &str no need to add &
                     if (quote! {#elem}).to_string() == "str" {
-                        arg_conversions.push(quote! {
-                            //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                            let #ident: String = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
-                            let #ident: #ty = #ident.as_str();
+                        converted_args.push(quote! {
+                            #input_ident.#field_ident
                         });
                     } else {
-                        arg_conversions.push(quote! {
-                            //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                            let #ident: #elem = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
-                            let #ident: #ty = &#ident;
+                        converted_args.push(quote! {
+                            &#input_ident.#field_ident
                         });
                     }
                 }
+                // For all other types
                 _ => {
-                    arg_conversions.push(quote! {
-                        //TODO unwrap here is pretty brutal, need to find way to have better error handling
-                        let #ident: #ty = holium_rust_sdk::internal::api::get_payload(#i_string).unwrap();
+                    input_payload_fields.push(quote! {
+                        #field_ident: #ty
+                    });
+                    input_payload_node_children.push(quote! {
+                        holium_rust_sdk::internal::key_tree::Node {
+                            value: Some(#field),
+                            children: <#ty>::generate_node().children
+                        }
+                    });
+                    converted_args.push(quote! {
+                        #input_ident.#field_ident
                     });
                 }
-            }*/
+            }
         }
-
-        let syn_unit = syn::Type::Tuple(syn::TypeTuple {
-            elems: Default::default(),
-            paren_token: Default::default(),
-        });
-        let syn_ret = self.function.ret.as_ref().unwrap_or(&syn_unit);
-        // TODO handle all types, not only tuples
-        /*let ret: TokenStream = match syn_ret {
-            syn::Type::Reference(_) => {
-                bail_span!(
-                    syn_ret,
-                    "cannot return a borrowed ref with #[holium_bindgen]",
-                )
-            }
-            syn::Type::Path(_) => {
-                let ident = Ident::new(&format!("ret{}", 0), Span::call_site());
-                let i_string = format!("{}", 0);
-                ret_conversions.push(quote! {
-                    holium_rust_sdk::internal::api::set_payload(#i_string, &#ident).unwrap();
-                });
-                quote! { #ident }
-            }
-            syn::Type::Tuple(t) => {
-                let mut converted_returns: Vec<TokenStream> = vec![];
-
-                for (i, elem) in t.elems.iter().enumerate() {
-                    let ident = Ident::new(&format!("ret{}", i), Span::call_site());
-                    let i_string = format!("{}", i);
-
-                    match elem {
-                        syn::Type::Reference(_) => ret_conversions.push(quote! {
-                            holium_rust_sdk::internal::api::set_payload(#i_string, #ident).unwrap();
-                        }),
-                        _ => ret_conversions.push(quote! {
-                            holium_rust_sdk::internal::api::set_payload(#i_string, &#ident).unwrap();
-                        })
-                    };
-
-                    converted_returns.push(quote! { #ident });
-                }
-                quote! { (#(#converted_returns),*) }
-            }
-            _ => {
-                bail_span!(
-                syn_ret,
-                "for now only tuples or single values are valid return types with #[holium_bindgen]",
-            )
-            }
-        };*/
 
         (quote! {
             #[allow(non_snake_case)]
             #[cfg_attr(
                 all(target_arch = "wasm32"),
-                export_name = #export_name,
+                export_name = #exported_name,
             )]
             #[allow(clippy::all)]
-            pub extern "C" fn #generated_name() {
+            pub extern "C" fn #holium_func_name() {
                 #[derive(holium_rust_sdk::internal::Serialize, holium_rust_sdk::internal::Deserialize)]
                 struct InputPayload {
                     #(#input_payload_fields),*
@@ -243,7 +205,15 @@ impl TryToTokens for ast::Export {
                     }
                 }
 
-                let _  = #receiver(4,4);
+                let input: InputPayload = holium_rust_sdk::internal::api::get_payload().unwrap().into();
+
+                let output = #receiver(#(#converted_args),*);
+
+                let output_cbor = holium_rust_sdk::internal::serde_cbor::value::to_value(output).unwrap();
+
+                let output_node = holium_rust_sdk::internal::data_tree::Node::new(output_cbor);
+
+                holium_rust_sdk::internal::api::set_payload(&output_node).unwrap();
             }
         })
         .to_tokens(into);
