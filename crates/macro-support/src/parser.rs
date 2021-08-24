@@ -3,7 +3,6 @@ use backend::Diagnostic;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn;
-use syn::Attribute;
 
 /// Conversion trait with context.
 ///

@@ -1,11 +1,16 @@
-use holium_rust_sdk::proc_macro::*;
-use std::collections::HashMap;
-use std::borrow::Borrow;
-
+use holium_rust_sdk::*;
 
 #[holium_bindgen]
-fn main(a: u32, b: u32) -> (u32) {
-    let result = a + b;
+pub struct Test {
+    pub key: u8,
+}
 
-    (result)
+#[holium_bindgen]
+pub struct Structure {
+    pub key: Vec<u8>,
+}
+
+#[holium_bindgen]
+pub fn main(a: u32, b: u32) -> u32 {
+    a + b
 }

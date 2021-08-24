@@ -2,11 +2,11 @@
 //! while non-leaf nodes point to ordered children.
 
 use crate::internal::key_tree::Node as KeyNode;
-use serde_cbor::to_vec;
+use serde::{Deserialize, Serialize};
 use serde_cbor::Value as CborValue;
 use std::collections::BTreeMap;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 /// Value held by the leaf of a data tree
 pub(crate) enum Value {
     Null,
@@ -30,7 +30,7 @@ impl Value {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 /// Recursive structure building simple data trees
 pub struct Node {
     pub(crate) value: Option<Value>,
