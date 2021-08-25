@@ -1,6 +1,6 @@
 [package]
 name = "holium-macro-support"
-version = "0.1.0"
+version = "1.0.0-alpha"
 authors = ["Polyphene <contact@polyphene.io>"]
 edition = "2018"
 
