@@ -76,7 +76,7 @@ impl Node {
         match &self.value {
             Some(value) => value.to_cbor(),
             None => {
-                if &key_node.children.len() > &(0 as usize) {
+                if &key_node.children.len() > &(0usize) {
                     let mut map: BTreeMap<CborValue, CborValue> = BTreeMap::new();
 
                     for (i, child) in self.children.iter().enumerate() {
