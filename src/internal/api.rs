@@ -1,5 +1,5 @@
 /*********************************************************
- * The interface module is the library that can be used in a Wasm runtime to interact with an host.
+ * The interface module is the library that can be used in a Wasm runtime to interact with a host.
  *********************************************************/
 
 /// ExecutionError represents all error that might have happened on the host
