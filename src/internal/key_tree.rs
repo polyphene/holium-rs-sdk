@@ -1,4 +1,4 @@
-//! Key trees are responsible for recursively holding structure keys used as inputs in transformations
+//! Key trees are responsible for recursively holding structure keys used as I/O paramters in transformations
 
 #[derive(Default, Debug, Eq, PartialEq)]
 pub struct Node {
@@ -6,7 +6,7 @@ pub struct Node {
     pub children: Vec<Node>,
 }
 
-/// Trait meant to generate key node for native rust types supported
+/// Trait meant to generate key node for supported native rust types
 pub trait GenerateNode {
     fn generate_node() -> Node;
 }

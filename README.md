@@ -16,26 +16,26 @@ charge of exposing internal dependencies to ensure that the generated code works
 ### Macro
 
 Located in `./crates/macro`, the macro crate is a `proc-macro` crate that implements the procedural macro
-that will be used in the Holium transformation.
+used for compilation of transformations in the Holium Framework.
 
 ### Macro Support
 
-Located in `./crates/macro-support`, the macro support crate is in charge of parsing the `Item` that
-are fetched by the procedural macro. This allows to convert the different elements to structure that 
+Located in `./crates/macro-support`, the macro support crate is in charge of parsing `Item` objects that
+are fetched by the procedural macro. This allows to convert the different elements to structures that 
 can be manipulated in the backend.
 
 ### Backend
 
-Located in `./crates/backend`, the backend crate contains all the logic that generates necessary code for a 
-transformation to run inside an Holium runtime.
+Located in `./crates/backend`, the backend crate contains all the logical sequence that generates necessary code for a 
+transformation to run inside a Holium runtime.
 
-### Usage
+## Usage
 
-The Holium Rust SDK have to be used as a procedural macro. Here is an example of how it has to be 
+The Holium Rust SDK has to be used as a procedural macro. Here is an example of how it has to be 
 implemented.
 
 ```rust
-use holium_rust_sdk::*;
+use holium_rust_sdk::holium_bindgen;
 
 #[holium_bindgen]
 pub struct Values {

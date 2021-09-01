@@ -71,12 +71,12 @@ impl Node {
         }
     }
 
-    /// Fuse a key tree and a node tree to generate a Cbor structure based them
+    /// Fuse a key tree and a node tree to generate a Cbor structure based on them
     pub fn assign_keys(&self, key_node: &KeyNode) -> CborValue {
         match &self.value {
             Some(value) => value.to_cbor(),
             None => {
-                if &key_node.children.len() > &(0 as usize) {
+                if &key_node.children.len() > &(0usize) {
                     let mut map: BTreeMap<CborValue, CborValue> = BTreeMap::new();
 
                     for (i, child) in self.children.iter().enumerate() {
