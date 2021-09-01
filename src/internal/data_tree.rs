@@ -71,7 +71,7 @@ impl Node {
         }
     }
 
-    /// Fuse a key tree and a node tree to generate a Cbor structure based them
+    /// Fuse a key tree and a node tree to generate a Cbor structure based on them
     pub fn assign_keys(&self, key_node: &KeyNode) -> CborValue {
         match &self.value {
             Some(value) => value.to_cbor(),
