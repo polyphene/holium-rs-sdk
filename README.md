@@ -16,7 +16,7 @@ charge of exposing internal dependencies to ensure that the generated code works
 ### Macro
 
 Located in `./crates/macro`, the macro crate is a `proc-macro` crate that implements the procedural macro
-that will be used in the Holium transformation.
+used for compilation of transformations in the Holium Framework.
 
 ### Macro Support
 
