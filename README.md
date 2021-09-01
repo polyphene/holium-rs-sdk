@@ -29,7 +29,7 @@ can be manipulated in the backend.
 Located in `./crates/backend`, the backend crate contains all the logical sequence that generates necessary code for a 
 transformation to run inside a Holium runtime.
 
-### Usage
+## Usage
 
 The Holium Rust SDK has to be used as a procedural macro. Here is an example of how it has to be 
 implemented.
