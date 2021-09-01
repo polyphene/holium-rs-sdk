@@ -1,4 +1,4 @@
-//! Key trees are responsible for recursively holding structure keys used as inputs in transformations
+//! Key trees are responsible for recursively holding structure keys used as I/O paramters in transformations
 
 #[derive(Default, Debug, Eq, PartialEq)]
 pub struct Node {
