@@ -51,7 +51,7 @@ impl ToTokens for ast::Struct {
         })
         .to_token_stream();
 
-        // For each filed of our structure add a new children node
+        // For each field of our structure add a new children node
         let mut generate_node_children: Vec<TokenStream> = vec![];
 
         for field in self.fields.iter() {
