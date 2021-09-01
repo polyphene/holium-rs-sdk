@@ -35,7 +35,7 @@ The Holium Rust SDK has to be used as a procedural macro. Here is an example of 
 implemented.
 
 ```rust
-use holium_rust_sdk::*;
+use holium_rust_sdk::holium_bindgen;
 
 #[holium_bindgen]
 pub struct Values {
