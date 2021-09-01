@@ -21,7 +21,7 @@ used for compilation of transformations in the Holium Framework.
 ### Macro Support
 
 Located in `./crates/macro-support`, the macro support crate is in charge of parsing `Item` objects that
-are fetched by the procedural macro. This allows to convert the different elements to structure that 
+are fetched by the procedural macro. This allows to convert the different elements to structures that 
 can be manipulated in the backend.
 
 ### Backend
