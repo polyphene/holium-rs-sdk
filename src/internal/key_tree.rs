@@ -41,8 +41,6 @@ primitives_impl!(char);
 primitives_impl!(str);
 primitives_impl!(String);
 
-///////////////////////////////////////////////////////////////////////////////
-
 impl<T> GenerateNode for [T] {
     #[inline]
     fn generate_node() -> Node {
@@ -76,8 +74,6 @@ array_impls! {
     20 21 22 23 24 25 26 27 28 29
     30 31 32
 }
-
-///////////////////////////////////////////////////////////////////////////////
 
 impl<T> GenerateNode for Option<T>
 where
@@ -142,8 +138,6 @@ mod tests {
             String,
         }
     }
-
-    ///////////////////////////////////////////////////////////////////////////////
 
     #[test]
     fn test_array() {
