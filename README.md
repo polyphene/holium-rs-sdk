@@ -31,8 +31,7 @@ transformation to run inside a Holium runtime.
 
 ## Usage
 
-The Holium Rust SDK has to be used as a procedural macro. Here is an example of how it has to be 
-implemented.
+The Holium Rust SDK has to be used as a procedural macro. Here is an example of how it is used in source code.
 
 ```rust
 use holium_rust_sdk::holium_bindgen;
