@@ -28,16 +28,16 @@ primitives_impl!(i8);
 primitives_impl!(i16);
 primitives_impl!(i32);
 primitives_impl!(i64);
+primitives_impl!(i128);
 primitives_impl!(usize);
 primitives_impl!(u8);
 primitives_impl!(u16);
 primitives_impl!(u32);
 primitives_impl!(u64);
+primitives_impl!(u128);
 primitives_impl!(f32);
 primitives_impl!(f64);
 primitives_impl!(char);
-primitives_impl!(i128);
-primitives_impl!(u128);
 primitives_impl!(str);
 primitives_impl!(String);
 
