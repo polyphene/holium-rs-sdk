@@ -1,3 +1,6 @@
+//! Contains all structures that can be parsed from a `TokenStream`. They will be used when generating
+//! code
+
 use proc_macro2::{Ident, Span};
 use syn;
 

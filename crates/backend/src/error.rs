@@ -1,3 +1,5 @@
+//! Error handling for any error that can arise during our procedural macro logic.
+
 use proc_macro2::*;
 use quote::{ToTokens, TokenStreamExt};
 use syn::parse::Error;
