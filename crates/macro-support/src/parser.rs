@@ -1,3 +1,5 @@
+//! Parser reads a source `TokenStream` to prepare the backend to generate custom code
+
 use backend::ast;
 use backend::Diagnostic;
 use proc_macro2::TokenStream;
@@ -20,6 +22,7 @@ impl<'a> ConvertToAst for &'a mut syn::ItemStruct {
     type Target = ast::Struct;
 
     fn convert(self) -> Result<Self::Target, Diagnostic> {
+        // No lifetime to make sure that we can handle it correctly in a payload
         if self.generics.params.len() > 0 {
             bail_span!(
                 self.generics,
@@ -28,12 +31,16 @@ impl<'a> ConvertToAst for &'a mut syn::ItemStruct {
             );
         }
 
+        // When handling struct, first create fields objects
         let mut fields = Vec::new();
         for (i, field) in self.fields.iter_mut().enumerate() {
+            // Fields visibility to be public to be taken into account
             match field.vis {
                 syn::Visibility::Public(..) => {}
                 _ => continue,
             }
+
+            // Derive field name from ident
             let (name, member) = match &field.ident {
                 Some(ident) => (ident.to_string(), syn::Member::Named(ident.clone())),
                 None => (i.to_string(), syn::Member::Unnamed(i.into())),
@@ -46,6 +53,8 @@ impl<'a> ConvertToAst for &'a mut syn::ItemStruct {
                 ty: field.ty.clone(),
             });
         }
+
+        // Generate the AST object for the Struct
         Ok(ast::Struct {
             rust_name: self.ident.clone(),
             name: self.ident.to_string(),
@@ -58,16 +67,19 @@ impl ConvertToAst for syn::ItemFn {
     type Target = ast::Function;
 
     fn convert(self) -> Result<Self::Target, Diagnostic> {
+        // To ensure that we can wrap & expose a function it has to be public
         match self.vis {
             syn::Visibility::Public(_) => {}
             _ => bail_span!(self, "can only #[holium_bindgen] public functions"),
         }
+        // const functions can not be extern
         if self.sig.constness.is_some() {
             bail_span!(
                 self.sig.constness,
                 "can only #[holium_bindgen] non-const functions"
             );
         }
+        // Prevent undefined behaviour in the functions code
         if self.sig.unsafety.is_some() {
             bail_span!(
                 self.sig.unsafety,
@@ -88,23 +100,27 @@ fn function_from_decl(
     if sig.variadic.is_some() {
         bail_span!(sig.variadic, "can't #[holium_bindgen] variadic functions");
     }
+
+    // No lifetime or generics to make sure that we can handle it correctly in a payload
     if sig.generics.params.len() > 0 {
         bail_span!(
             sig.generics,
             "can't #[holium_bindgen] functions with lifetime or type parameters",
         );
     }
+    // TODO handle asyncness if possible
     if sig.asyncness.is_some() {
         bail_span!(
             sig.generics,
             "can't #[holium_bindgen] async functions functions",
         );
     }
-    // TODO maybe one day lifetime could be handled
+
     assert_no_lifetimes(&sig)?;
 
     let syn::Signature { inputs, output, .. } = sig;
 
+    // No handling of methods
     let arguments = inputs
         .into_iter()
         .filter_map(|arg| match arg {
@@ -115,11 +131,13 @@ fn function_from_decl(
         })
         .collect::<Vec<_>>();
 
+    // Fetch return type
     let ret = match output {
         syn::ReturnType::Default => None,
         syn::ReturnType::Type(_, ty) => Some(*ty),
     };
 
+    // Generate our AST
     Ok(ast::Function {
         arguments,
         name: decl_name.to_string(),
@@ -141,20 +159,10 @@ impl<'a> MacroParse<&'a mut TokenStream> for syn::Item {
         program: &mut ast::Program,
         tokens: &'a mut TokenStream,
     ) -> Result<(), Diagnostic> {
+        // Match of Item types to parse & generate our AST
         match self {
+            // Handles public function
             syn::Item::Fn(mut f) => {
-                let no_mangle = f
-                    .attrs
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, m)| m.parse_meta().ok().map(|m| (i, m)))
-                    .find(|(_, m)| m.path().is_ident("no_mangle"));
-                match no_mangle {
-                    Some((i, _)) => {
-                        f.attrs.remove(i);
-                    }
-                    _ => {}
-                }
                 f.to_tokens(tokens);
 
                 let method_kind = ast::MethodKind::Operation(ast::Operation {
@@ -170,6 +178,7 @@ impl<'a> MacroParse<&'a mut TokenStream> for syn::Item {
                     rust_name,
                 });
             }
+            // Handles strcutures
             syn::Item::Struct(mut s) => {
                 program.structs.push((&mut s).convert()?);
                 s.to_tokens(tokens);

@@ -1,3 +1,5 @@
+//! Codegen has the logic of code generation for our wasm module to run in the Holium protocol.
+
 use crate::ast;
 use crate::Diagnostic;
 use proc_macro2::{Ident, Span, TokenStream};
