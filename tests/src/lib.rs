@@ -1,13 +1,8 @@
 use holium_rust_sdk::*;
 
 #[holium_bindgen]
-pub struct Test {
-    pub key: u8,
-}
-
-#[holium_bindgen]
-pub struct Structure {
-    pub key: Vec<u8>,
+pub struct Value {
+    pub a: u32,
 }
 
 #[holium_bindgen]

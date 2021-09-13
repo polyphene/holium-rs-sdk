@@ -16,5 +16,5 @@ members = [
     "crates/macro-support",
     "crates/macro",
     "crates/backend",
-    "tests/integration"
+    "tests"
     ]

@@ -6,6 +6,7 @@ pub use serde_cbor;
 
 pub mod data_tree;
 pub mod key_tree;
+pub mod version_embedder;
 
 pub mod api;
 #[allow(dead_code)]
