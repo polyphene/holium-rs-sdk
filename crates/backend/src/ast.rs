@@ -30,7 +30,7 @@ pub struct Export {
     pub method_kind: MethodKind,
     /// The struct name, in Rust, this is attached to
     pub rust_class: Option<Ident>,
-    /// The name of the rust function/method on the rust side.
+    /// The name of the rust function/method on the rust source code
     pub rust_name: Ident,
 }
 
