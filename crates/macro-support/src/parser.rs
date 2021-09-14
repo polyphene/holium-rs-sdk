@@ -162,7 +162,7 @@ impl<'a> MacroParse<&'a mut TokenStream> for syn::Item {
         // Match of Item types to parse & generate our AST
         match self {
             // Handles public function
-            syn::Item::Fn(mut f) => {
+            syn::Item::Fn(f) => {
                 f.to_tokens(tokens);
 
                 let method_kind = ast::MethodKind::Operation(ast::Operation {
