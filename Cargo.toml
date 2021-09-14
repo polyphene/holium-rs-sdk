@@ -1,21 +1,8 @@
-[package]
-name = "holium-rust-sdk"
-version = "1.0.0-alpha"
-authors = ["Polyphene <contact@polyphene.io>"]
-edition = "2018"
-
-[dependencies]
-anyhow = "^1.0.42"
-holium-macro = { path = "crates/macro", version = "=1.0.0-alpha" }
-serde = { version = "^1.0.125", features = ["derive"] }
-serde_cbor = "^0.11.1"
-thiserror = "^1.0.25"
-
 [workspace]
 members = [
     "crates/cli",
     "crates/macro-support",
     "crates/macro",
     "crates/backend",
-    "tests"
+    "sdk"
     ]

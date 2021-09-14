@@ -4,7 +4,7 @@ extern crate proc_macro2;
 extern crate quote;
 extern crate syn;
 #[macro_use]
-extern crate holium_backend as backend;
+extern crate holium_macro_backend as backend;
 
 use crate::parser::MacroParse;
 use backend::{Diagnostic, TryToTokens};

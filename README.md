@@ -34,7 +34,7 @@ transformation to run inside a Holium runtime.
 The Holium Rust SDK has to be used as a procedural macro. Here is an example of how it is used in source code.
 
 ```rust
-use holium_rust_sdk::holium_bindgen;
+use holium_rs_sdk::holium_bindgen;
 
 #[holium_bindgen]
 pub struct Values {
