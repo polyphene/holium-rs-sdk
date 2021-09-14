@@ -14,3 +14,4 @@ holium-rust-sdk = { path="../.." }
 [dependencies]
 holium-macro-support={ path="../macro-support" }
 quote = "^1.0.9"
+serde = { version = "^1.0.125", features = ["derive"] }
