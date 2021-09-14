@@ -9,7 +9,7 @@ extra-traits = ["syn/extra-traits"]
 strict-macro = []
 
 [dependencies]
-holium-backend = { path="../backend" }
+holium-macro-backend = { path="../backend" }
 quote = "1.0"
 proc-macro2 = "1.0"
 syn = { version = "1.0.67", features = ["visit", "full"] }
