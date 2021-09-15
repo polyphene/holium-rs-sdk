@@ -4,5 +4,6 @@ members = [
     "crates/macro-support",
     "crates/macro",
     "crates/backend",
-    "sdk"
+    "sdk",
+    "sdk/tests"
     ]
