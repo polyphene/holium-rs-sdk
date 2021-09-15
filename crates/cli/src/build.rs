@@ -1,23 +1,38 @@
 use crate::errors::CommonError;
 use anyhow::Result;
+use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 
 #[derive(serde::Deserialize)]
-#[serde(tag = "reason", rename_all = "kebab-case")]
-enum DiagnosticMessage {
-    BuildScriptExecuted,
-    BuildFinished,
-    CompilerArtifact { filenames: Vec<String> },
-    RunWithArgs,
+struct CompilerArtifact {
+    reason: String,
+    package_id: String,
+    manifest_path: PathBuf,
+    target: Target,
+    filenames: Vec<PathBuf>,
 }
 
+#[derive(serde::Deserialize)]
+struct Target {
+    kind: Vec<String>,
+    crate_types: Vec<String>,
+    name: String,
+    src_path: PathBuf,
+    edition: u32,
+    doc: bool,
+    doctest: bool,
+    test: bool,
+}
+
+/// Function meant to build a Wasm bytecode file from a Rust project
 pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
     use std::io::Read;
     use std::str::FromStr;
 
     let trailing_args: Vec<&str> = args.values_of("optional").unwrap_or_default().collect();
 
+    // Prepare and run cargo build
     let mut cargo = Command::new("cargo");
     cargo
         .arg("build")
@@ -48,9 +63,10 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
         .into());
     }
 
-    let mut wasms: Vec<String> = Vec::new();
+    // Fetch generated Wasm files from build output
+    let mut wasms: Vec<PathBuf> = Vec::new();
     for line in output.lines() {
-        if let Ok(DiagnosticMessage::CompilerArtifact { filenames }) = serde_json::from_str(line) {
+        if let Ok(CompilerArtifact { filenames, .. }) = serde_json::from_str(line) {
             wasms.extend(
                 filenames
                     .into_iter()
@@ -60,12 +76,12 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
         }
     }
 
-    println!("{:?}", wasms);
     if wasms.is_empty() {
         // it is possible to build a object file without Wasm artifacts
         return Ok(());
     }
 
+    // Copy wasm artifacts to artifacts folder
     for wasm in wasms {
         let wasm_path = std::path::PathBuf::from(wasm);
         let mut path = env::current_dir()?;
