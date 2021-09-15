@@ -1,6 +1,5 @@
 use crate::errors::CommonError;
 use anyhow::Result;
-use std::path::PathBuf;
 use std::process::Command;
 use std::{env, fs};
 
@@ -8,9 +7,9 @@ use std::{env, fs};
 struct CompilerArtifact {
     reason: String,
     package_id: String,
-    manifest_path: PathBuf,
+    manifest_path: String,
     target: Target,
-    filenames: Vec<PathBuf>,
+    filenames: Vec<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -18,11 +17,7 @@ struct Target {
     kind: Vec<String>,
     crate_types: Vec<String>,
     name: String,
-    src_path: PathBuf,
-    edition: u32,
-    doc: bool,
-    doctest: bool,
-    test: bool,
+    src_path: String,
 }
 
 /// Function meant to build a Wasm bytecode file from a Rust project
@@ -64,7 +59,7 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
     }
 
     // Fetch generated Wasm files from build output
-    let mut wasms: Vec<PathBuf> = Vec::new();
+    let mut wasms: Vec<String> = Vec::new();
     for line in output.lines() {
         if let Ok(CompilerArtifact { filenames, .. }) = serde_json::from_str(line) {
             wasms.extend(
@@ -75,7 +70,7 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
             )
         }
     }
-
+    println!("{:?}", wasms);
     if wasms.is_empty() {
         // it is possible to build a object file without Wasm artifacts
         return Ok(());
@@ -91,7 +86,7 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
         }
         if wasm_path.is_file() {
             path.push(&wasm_path.file_name().unwrap());
-            fs::copy(wasm_path, path)?;
+            fs::copy(&wasm_path, &path)?;
         }
     }
 
