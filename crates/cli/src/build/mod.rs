@@ -1,4 +1,4 @@
-use crate::errors::CommonError;
+use crate::utils::errors::CommonError;
 use anyhow::Result;
 use std::process::Command;
 use std::{env, fs};
@@ -58,7 +58,7 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
     let status = process.wait()?;
     if !status.success() {
         return Err(CommonError::WasmCompilationError(format!(
-            "Compilation failed with status {}",
+            "compilation failed with status {}",
             status
         ))
         .into());
@@ -85,7 +85,7 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
     // Copy wasm artifacts to artifacts folder
     for wasm in wasms {
         let wasm_path = std::path::PathBuf::from(wasm);
-        let mut path = env::current_dir()?;
+
         output_path.push("artifacts");
         if !output_path.exists() {
             fs::create_dir(&output_path)?;
@@ -95,6 +95,9 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
             fs::copy(&wasm_path, &output_path)?;
         }
     }
+
+    // Print success message
+    println!("Successfully built Holium module.");
 
     Ok(())
 }
