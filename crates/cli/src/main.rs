@@ -6,7 +6,7 @@ mod errors;
 fn main() {
     // Create CLI matches
     let matches = App::new("Holium")
-        .bin_name("holium-sdk")
+        .bin_name("holium-sdk-cli")
         .version(crate_version!())
         .author(crate_authors!("\n"))
         .about("Develop module for the Holium protocol!")

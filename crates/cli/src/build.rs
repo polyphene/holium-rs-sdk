@@ -34,7 +34,6 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
         .arg("--target")
         .arg("wasm32-unknown-unknown");
     cargo.arg("--message-format").arg("json-render-diagnostics");
-    cargo.arg("--release");
     cargo.args(trailing_args);
 
     let mut process = cargo.stdout(std::process::Stdio::piped()).spawn()?;
@@ -70,7 +69,7 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
             )
         }
     }
-    println!("{:?}", wasms);
+
     if wasms.is_empty() {
         // it is possible to build a object file without Wasm artifacts
         return Ok(());
