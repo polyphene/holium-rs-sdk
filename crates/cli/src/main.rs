@@ -16,6 +16,13 @@ fn main() {
                 .about("Build a valid Holium module from a Rust project")
                 .setting(AppSettings::TrailingVarArg)
                 .setting(AppSettings::AllowLeadingHyphen)
+                .arg(
+                    Arg::with_name("output")
+                        .short("o")
+                        .long("output")
+                        .value_name("OUTPUT_DIR")
+                        .help("Sets a custom output directory"),
+                )
                 .arg(Arg::from_usage("[OPTIONAL]... 'Cargo build arguments'").multiple(true)),
         )
         .get_matches();

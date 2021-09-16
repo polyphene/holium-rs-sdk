@@ -25,6 +25,12 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
     use std::io::Read;
     use std::str::FromStr;
 
+    let output_option = args.value_of("output");
+    let mut output_path = match output_option {
+        Some(output_str) => fs::canonicalize(std::path::PathBuf::from_str(output_str)?)?,
+        None => env::current_dir()?,
+    };
+
     let trailing_args: Vec<&str> = args.values_of("optional").unwrap_or_default().collect();
 
     // Prepare and run cargo build
@@ -33,6 +39,7 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
         .arg("build")
         .arg("--target")
         .arg("wasm32-unknown-unknown");
+    cargo.arg("--release");
     cargo.arg("--message-format").arg("json-render-diagnostics");
     cargo.args(trailing_args);
 
@@ -79,13 +86,13 @@ pub(crate) fn build(args: &clap::ArgMatches<'_>) -> Result<()> {
     for wasm in wasms {
         let wasm_path = std::path::PathBuf::from(wasm);
         let mut path = env::current_dir()?;
-        path.push("artifacts");
-        if !path.exists() {
-            fs::create_dir(&path)?;
+        output_path.push("artifacts");
+        if !output_path.exists() {
+            fs::create_dir(&output_path)?;
         }
         if wasm_path.is_file() {
-            path.push(&wasm_path.file_name().unwrap());
-            fs::copy(&wasm_path, &path)?;
+            output_path.push(&wasm_path.file_name().unwrap());
+            fs::copy(&wasm_path, &output_path)?;
         }
     }
 
