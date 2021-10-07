@@ -48,7 +48,8 @@ impl ToTokens for ast::Struct {
 
         // Add derive for serialize & deserialize
         *into = (quote! {
-            #[derive(holium_rust_sdk::internal::Serialize, holium_rust_sdk::internal::Deserialize)]
+            #[derive(holium_rust_sdk::internal::serde::Serialize, holium_rust_sdk::internal::serde::Deserialize)]
+            #[serde( crate = "holium_rust_sdk::internal::serde")]
             #into
         })
         .to_token_stream();
@@ -182,7 +183,8 @@ impl TryToTokens for ast::Export {
             )]
             #[allow(clippy::all)]
             pub extern "C" fn #holium_func_name() {
-                #[derive(holium_rust_sdk::internal::Serialize, holium_rust_sdk::internal::Deserialize)]
+                #[derive(holium_rust_sdk::internal::serde::Serialize, holium_rust_sdk::internal::serde::Deserialize)]
+                #[serde( crate = "holium_rust_sdk::internal::serde")]
                 struct InputPayload {
                     #(#input_payload_fields),*
                 }
