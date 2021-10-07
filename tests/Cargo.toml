@@ -9,4 +9,3 @@ crate-type = ["cdylib"]
 
 [dependencies]
 holium-rust-sdk={path= ".." }
-serde = { version = "^1.0.125", features = ["derive"] }
