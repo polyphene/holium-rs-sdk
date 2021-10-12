@@ -216,7 +216,7 @@ impl TryToTokens for ast::Export {
 
                 let output = #receiver(#(#converted_args),*);
 
-                let output_cbor = holium_rust_sdk::internal::serde_cbor::value::to_value(output).unwrap();
+                let output_cbor = holium_rust_sdk::internal::serde_cbor::value::to_value(vec![output]).unwrap();
 
                 let output_node = holium_rust_sdk::internal::data_tree::Node::new(output_cbor);
                 let output_node_u8 = holium_rust_sdk::internal::serde_cbor::to_vec(&output_node).unwrap();
