@@ -80,7 +80,7 @@ impl Node {
                     let mut map: BTreeMap<CborValue, CborValue> = BTreeMap::new();
 
                     for (i, child) in self.children.iter().enumerate() {
-                        // We can unwrap here as we will not handle the error more properly later on
+                        // todo We can unwrap here as we will handle the error more properly later on
                         let key = &key_node.children.get(i).unwrap();
                         map.insert(
                             CborValue::Text(String::from(key.value.unwrap())),
