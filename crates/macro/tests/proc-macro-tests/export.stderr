@@ -1,0 +1,43 @@
+error: can't #[holium_bindgen] functions with lifetime or type parameters
+  --> $DIR/export.rs:90:12
+   |
+90 | pub fn bad3<'a>(x: &'a GoodStruct, y: &'a GoodStruct) -> &'a GoodStruct {
+   |            ^^^^
+
+error: can't #[holium_bindgen] functions with lifetime or type parameters
+  --> $DIR/export.rs:97:12
+   |
+97 | pub fn bad4<T>(x: T) -> T {
+   |            ^^^
+
+error[E0412]: cannot find type `BadStruct` in this scope
+  --> $DIR/export.rs:75:16
+   |
+6  | pub struct GoodStruct {
+   | --------------------- similarly named struct `GoodStruct` defined here
+...
+75 | pub fn bad1(a: BadStruct) -> BadStruct {
+   |                ^^^^^^^^^ help: a struct with a similar name exists: `GoodStruct`
+
+error[E0412]: cannot find type `BadStruct` in this scope
+  --> $DIR/export.rs:75:30
+   |
+6  | pub struct GoodStruct {
+   | --------------------- similarly named struct `GoodStruct` defined here
+...
+75 | pub fn bad1(a: BadStruct) -> BadStruct {
+   |                              ^^^^^^^^^ help: a struct with a similar name exists: `GoodStruct`
+
+error[E0599]: no function or associated item named `generate_node` found for struct `BadStructOnlySerde` in the current scope
+  --> $DIR/export.rs:84:1
+   |
+80 | struct BadStructOnlySerde {
+   | ------------------------- function or associated item `generate_node` not found for this
+...
+84 | #[holium_bindgen]
+   | ^^^^^^^^^^^^^^^^^ function or associated item not found in `BadStructOnlySerde`
+   |
+   = help: items from traits can only be used if the trait is implemented and in scope
+   = note: the following trait defines an item `generate_node`, perhaps you need to implement it:
+           candidate #1: `holium_rust_sdk::GenerateNode`
+   = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
