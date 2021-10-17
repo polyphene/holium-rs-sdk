@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to holium rust SDK 👋</h1>
 
-> Holium Rust SDK is a tool used to compile rust code to proper Holium transformation. It leverages procedural macro to do so.
+> Holium Rust SDK is a tool used to compile rust code to proper Holium transformations. It leverages procedural macro to do so.
 
 ### 🏠 [Homepage](https://holium.org/)
 
