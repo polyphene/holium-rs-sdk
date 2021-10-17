@@ -10,7 +10,7 @@ The project is divided in 4 main parts.
 
 ### Holium Rust SDK
 
-Located in `./src`, the Holium Rust SDK is the crate that exposes the procdural macro to the rust code. It is also in
+Located in `./crates/sdk`, the Holium Rust SDK is the crate that exposes the procedural macro to the rust code. It is also in
 charge of exposing internal dependencies to ensure that the generated code works.
 
 ### Macro
