@@ -72,7 +72,7 @@ struct BadStructNoMacro {
 }
 
 #[holium_bindgen]
-pub fn bad1(a: BadStruct) -> BadStruct {
+pub fn bad1(a: BadStructNoMacro) -> BadStructNoMacro {
     a
 }
 
