@@ -1,28 +1,32 @@
 WARN rustc_metadata::locator no metadata found: failed to mmap rmeta metadata: '$WORKSPACE/target/tests/target/x86_64-unknown-linux-gnu/debug/deps/libholium_macro_tests-ebf49e103d754890.rmeta'
 error: can't #[holium_bindgen] functions with lifetime or type parameters
-  --> tests/proc-macro-tests/export.rs:90:12
+  --> tests/proc-macro-tests/export.rs:90:13
    |
-90 | pub fn bad3<'a>(x: &'a GoodStruct, y: &'a GoodStruct) -> &'a GoodStruct {
-   |            ^^^^
+90 | pub fn fail3<'a>(x: &'a GoodStruct, y: &'a GoodStruct) -> &'a GoodStruct {
+   |             ^^^^
 
 error: can't #[holium_bindgen] functions with lifetime or type parameters
-  --> tests/proc-macro-tests/export.rs:97:12
+  --> tests/proc-macro-tests/export.rs:97:13
    |
-97 | pub fn bad4<T>(x: T) -> T {
-   |            ^^^
+97 | pub fn fail4<T>(x: T) -> T {
+   |             ^^^
 
 error[E0277]: the trait bound `BadStructNoMacro: Serialize` is not satisfied
    --> tests/proc-macro-tests/export.rs:74:1
     |
 74  | #[holium_bindgen]
-    | ^^^^^^^^^^^^^^^^^ the trait `Serialize` is not implemented for `BadStructNoMacro`
+    | ^^^^^^^^^^^^^^^^^
+    | |
+    | the trait `Serialize` is not implemented for `BadStructNoMacro`
+    | required by a bound introduced by this call
     |
+    = note: required because of the requirements on the impl of `Serialize` for `Vec<BadStructNoMacro>`
 note: required by a bound in `to_value`
    --> $CARGO/serde_cbor-0.11.2/src/value/ser.rs
     |
     |     T: Serialize,
     |        ^^^^^^^^^ required by this bound in `to_value`
-    = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+    = note: this error originates in the macro `vec` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0599]: no function or associated item named `generate_node` found for struct `BadStructNoMacro` in the current scope
   --> tests/proc-macro-tests/export.rs:74:1
