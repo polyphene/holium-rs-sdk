@@ -1,14 +1,15 @@
+WARN rustc_metadata::locator no metadata found: failed to mmap rmeta metadata: '$WORKSPACE/target/tests/target/x86_64-unknown-linux-gnu/debug/deps/libholium_macro_tests-ebf49e103d754890.rmeta'
 error: can't #[holium_bindgen] functions with lifetime or type parameters
-  --> tests/proc-macro-tests/export.rs:90:13
+  --> tests/proc-macro-tests/export.rs:90:12
    |
-90 | pub fn fail3<'a>(x: &'a GoodStruct, y: &'a GoodStruct) -> &'a GoodStruct {
-   |             ^^^^
+90 | pub fn bad3<'a>(x: &'a GoodStruct, y: &'a GoodStruct) -> &'a GoodStruct {
+   |            ^^^^
 
 error: can't #[holium_bindgen] functions with lifetime or type parameters
-  --> tests/proc-macro-tests/export.rs:97:13
+  --> tests/proc-macro-tests/export.rs:97:12
    |
-97 | pub fn fail4<T>(x: T) -> T {
-   |             ^^^
+97 | pub fn bad4<T>(x: T) -> T {
+   |            ^^^
 
 error[E0277]: the trait bound `BadStructNoMacro: Serialize` is not satisfied
    --> tests/proc-macro-tests/export.rs:74:1
@@ -16,13 +17,12 @@ error[E0277]: the trait bound `BadStructNoMacro: Serialize` is not satisfied
 74  | #[holium_bindgen]
     | ^^^^^^^^^^^^^^^^^ the trait `Serialize` is not implemented for `BadStructNoMacro`
     |
-   ::: $CARGO/serde_cbor-0.11.2/src/value/ser.rs
+note: required by a bound in `to_value`
+   --> $CARGO/serde_cbor-0.11.2/src/value/ser.rs
     |
     |     T: Serialize,
-    |        --------- required by this bound in `to_value`
-    |
-    = note: required because of the requirements on the impl of `Serialize` for `Vec<BadStructNoMacro>`
-    = note: this error originates in the macro `vec` (in Nightly builds, run with -Z macro-backtrace for more info)
+    |        ^^^^^^^^^ required by this bound in `to_value`
+    = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0599]: no function or associated item named `generate_node` found for struct `BadStructNoMacro` in the current scope
   --> tests/proc-macro-tests/export.rs:74:1
@@ -39,31 +39,56 @@ error[E0599]: no function or associated item named `generate_node` found for str
    = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `BadStructNoMacro: Serialize` is not satisfied
-  --> tests/proc-macro-tests/export.rs:74:1
-   |
-74 | #[holium_bindgen]
-   | ^^^^^^^^^^^^^^^^^ the trait `Serialize` is not implemented for `BadStructNoMacro`
-   |
-   = note: required by `_::_serde::ser::SerializeStruct::serialize_field`
-   = note: this error originates in the derive macro `holium_rust_sdk::internal::serde::Serialize` (in Nightly builds, run with -Z macro-backtrace for more info)
+    --> tests/proc-macro-tests/export.rs:74:1
+     |
+74   | #[holium_bindgen]
+     | ^^^^^^^^^^^^^^^^^
+     | |
+     | the trait `Serialize` is not implemented for `BadStructNoMacro`
+     | required by a bound introduced by this call
+     |
+note: required by `_::_serde::ser::SerializeStruct::serialize_field`
+    --> $CARGO/serde-1.0.130/src/ser/mod.rs
+     |
+     | /     fn serialize_field<T: ?Sized>(
+     | |         &mut self,
+     | |         key: &'static str,
+     | |         value: &T,
+     | |     ) -> Result<(), Self::Error>
+     | |     where
+     | |         T: Serialize;
+     | |_____________________^
+     = note: this error originates in the derive macro `holium_rust_sdk::internal::serde::Serialize` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `BadStructNoMacro: Deserialize<'_>` is not satisfied
-  --> tests/proc-macro-tests/export.rs:74:1
-   |
-74 | #[holium_bindgen]
-   | ^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `BadStructNoMacro`
-   |
-   = note: required by `next_element`
-   = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+    --> tests/proc-macro-tests/export.rs:74:1
+     |
+74   | #[holium_bindgen]
+     | ^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `BadStructNoMacro`
+     |
+note: required by `next_element`
+    --> $CARGO/serde-1.0.130/src/de/mod.rs
+     |
+     | /     fn next_element<T>(&mut self) -> Result<Option<T>, Self::Error>
+     | |     where
+     | |         T: Deserialize<'de>,
+     | |____________________________^
+     = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `BadStructNoMacro: Deserialize<'_>` is not satisfied
-  --> tests/proc-macro-tests/export.rs:74:1
-   |
-74 | #[holium_bindgen]
-   | ^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `BadStructNoMacro`
-   |
-   = note: required by `next_value`
-   = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+    --> tests/proc-macro-tests/export.rs:74:1
+     |
+74   | #[holium_bindgen]
+     | ^^^^^^^^^^^^^^^^^ the trait `Deserialize<'_>` is not implemented for `BadStructNoMacro`
+     |
+note: required by `next_value`
+    --> $CARGO/serde-1.0.130/src/de/mod.rs
+     |
+     | /     fn next_value<V>(&mut self) -> Result<V, Self::Error>
+     | |     where
+     | |         V: Deserialize<'de>,
+     | |____________________________^
+     = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0599]: no function or associated item named `generate_node` found for struct `BadStructOnlySerde` in the current scope
   --> tests/proc-macro-tests/export.rs:84:1
