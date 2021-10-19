@@ -16,9 +16,9 @@ error[E0277]: the trait bound `BadStructNoMacro: Serialize` is not satisfied
 74  | #[holium_bindgen]
     | ^^^^^^^^^^^^^^^^^ the trait `Serialize` is not implemented for `BadStructNoMacro`
     |
-   ::: C:/Users/thoma/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_cbor-0.11.2/src/value/ser.rs:440:8
+   ::: $CARGO/serde_cbor-0.11.2/src/value/ser.rs
     |
-440 |     T: Serialize,
+    |     T: Serialize,
     |        --------- required by this bound in `to_value`
     |
     = note: required because of the requirements on the impl of `Serialize` for `Vec<BadStructNoMacro>`

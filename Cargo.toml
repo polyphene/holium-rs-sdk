@@ -5,4 +5,3 @@ members = [
     "crates/backend",
     "crates/sdk"
 ]
-exclude = ["tests/assets/rust-package"]
