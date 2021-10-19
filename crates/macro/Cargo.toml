@@ -8,7 +8,7 @@ edition = "2018"
 proc-macro = true
 
 [dev-dependencies]
-trybuild = "^1.0.42"
+trybuild = "=1.0.42"
 holium-rust-sdk = { path="../sdk" }
 
 [dependencies]
