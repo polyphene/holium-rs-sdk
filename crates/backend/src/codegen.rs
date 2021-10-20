@@ -182,7 +182,7 @@ impl TryToTokens for ast::Export {
                 export_name = #exported_name,
             )]
             #[allow(clippy::all)]
-            pub extern "C" fn #holium_func_name() {
+            pub extern "C" fn #holium_func_name(ptr: *mut u8, len: usize) -> holium_rust_sdk::internal::memory::Slice {
                 #[derive(holium_rust_sdk::internal::serde::Serialize, holium_rust_sdk::internal::serde::Deserialize)]
                 #[serde( crate = "holium_rust_sdk::internal::serde")]
                 struct InputPayload {
@@ -209,15 +209,22 @@ impl TryToTokens for ast::Export {
                     }
                 }
 
-                let input: InputPayload = holium_rust_sdk::internal::api::get_payload().unwrap().into();
+                let payload_u8: &[u8] = unsafe { std::slice::from_raw_parts(ptr, len) };
+                let data_node: holium_rust_sdk::internal::data_tree::Node = holium_rust_sdk::internal::serde_cbor::from_slice(payload_u8).unwrap();
+
+                let input: InputPayload = data_node.into();
 
                 let output = #receiver(#(#converted_args),*);
 
-                let output_cbor = holium_rust_sdk::internal::serde_cbor::value::to_value(output).unwrap();
+                let output_cbor = holium_rust_sdk::internal::serde_cbor::value::to_value(vec![output]).unwrap();
 
                 let output_node = holium_rust_sdk::internal::data_tree::Node::new(output_cbor);
+                let output_node_u8 = holium_rust_sdk::internal::serde_cbor::to_vec(&output_node).unwrap();
 
-                holium_rust_sdk::internal::api::set_payload(&output_node).unwrap();
+                holium_rust_sdk::internal::memory::Slice {
+                    ptr: output_node_u8.as_ptr() as u32,
+                    len: output_node_u8.len() as u32
+                }
             }
         })
         .to_tokens(into);

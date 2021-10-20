@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to holium rust SDK 👋</h1>
 
-> Holium Rust SDK is a tool used to compile rust code to proper Holium transformation. It leverages procedural macro to do so.
+> Holium Rust SDK is a tool used to compile rust code to proper Holium transformations. It leverages procedural macro to do so.
 
 ### 🏠 [Homepage](https://holium.org/)
 
@@ -10,13 +10,16 @@ The project is divided in 4 main parts.
 
 ### Holium Rust SDK
 
-Located in `./crates/sdk`, the Holium Rust SDK is the crate that exposes the procdural macro to the rust code. It is also in
+Located in `./crates/sdk`, the Holium Rust SDK is the crate that exposes the procedural macro to the rust code. It is also in
 charge of exposing internal dependencies to ensure that the generated code works.
 
 ### Macro
 
 Located in `./crates/macro`, the macro crate is a `proc-macro` crate that implements the procedural macro
 used for compilation of transformations in the Holium Framework.
+
+It is also in this crate that our tests on the procedural macro are conducted. Know more about our testing method 
+[here](./crates/macro/tests/proc-macro-tests/README.md).
 
 ### Macro Support
 
