@@ -1,0 +1,15 @@
+[package]
+name = "holium-macro-support"
+version = "1.0.0-alpha"
+authors = ["Polyphene <contact@polyphene.io>"]
+edition = "2018"
+
+[features]
+extra-traits = ["syn/extra-traits"]
+strict-macro = []
+
+[dependencies]
+holium-backend = { path="../backend" }
+quote = "^1.0"
+proc-macro2 = "^1.0"
+syn = { version = "^1.0.67", features = ["visit", "full"] }
