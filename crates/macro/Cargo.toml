@@ -9,7 +9,7 @@ proc-macro = true
 
 [dev-dependencies]
 trybuild = "=1.0.49"
-holium-rust-sdk = { path="../sdk" }
+holium-rs-sdk = { path="../sdk" }
 
 [dependencies]
 holium-macro-support={ path="../macro-support" }

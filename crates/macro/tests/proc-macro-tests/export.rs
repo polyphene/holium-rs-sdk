@@ -1,5 +1,5 @@
 #![allow(unreachable_code)]
-use holium_rust_sdk::*;
+use holium_rs_sdk::*;
 use serde::{Deserialize, Serialize};
 
 #[holium_bindgen]

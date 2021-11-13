@@ -35,7 +35,7 @@ error[E0599]: no function or associated item named `generate_node` found for str
    |
    = help: items from traits can only be used if the trait is implemented and in scope
    = note: the following trait defines an item `generate_node`, perhaps you need to implement it:
-           candidate #1: `holium_rust_sdk::GenerateNode`
+           candidate #1: `holium_rs_sdk::GenerateNode`
    = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `BadStructNoMacro: Serialize` is not satisfied
@@ -45,7 +45,7 @@ error[E0277]: the trait bound `BadStructNoMacro: Serialize` is not satisfied
    | ^^^^^^^^^^^^^^^^^ the trait `Serialize` is not implemented for `BadStructNoMacro`
    |
    = note: required by `_::_serde::ser::SerializeStruct::serialize_field`
-   = note: this error originates in the derive macro `holium_rust_sdk::internal::serde::Serialize` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the derive macro `holium_rs_sdk::internal::serde::Serialize` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `BadStructNoMacro: Deserialize<'_>` is not satisfied
   --> $DIR/export.rs:74:1
@@ -76,5 +76,5 @@ error[E0599]: no function or associated item named `generate_node` found for str
    |
    = help: items from traits can only be used if the trait is implemented and in scope
    = note: the following trait defines an item `generate_node`, perhaps you need to implement it:
-           candidate #1: `holium_rust_sdk::GenerateNode`
+           candidate #1: `holium_rs_sdk::GenerateNode`
    = note: this error originates in the attribute macro `holium_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
