@@ -80,7 +80,7 @@ Give a ⭐️ if this project helped you and use the official badge to link to t
 
 ### 📝 License
 
-This project is [MIT](https://raw.githubusercontent.com/polyphene/holium-rs/main/LICENSE) licensed.
+This project is [MIT](https://raw.githubusercontent.com/polyphene/holium-rs-sdk/main/LICENSE) licensed.
 
 
 ***
