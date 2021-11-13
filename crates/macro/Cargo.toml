@@ -3,6 +3,12 @@ name = "holium-macro"
 version = "1.0.0-alpha"
 authors = ["Polyphene <contact@polyphene.io>"]
 edition = "2018"
+license = "MIT"
+description = "Procedural macro for the Holium Rust SDK."
+documentation = "https://docs.holium.org"
+homepage = "https://holium.org"
+repository = "https://github.com/polyphene/holium-rs-sdk"
+keywords = ["holium"]
 
 [lib]
 proc-macro = true
