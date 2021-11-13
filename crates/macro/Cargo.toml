@@ -1,6 +1,6 @@
 [package]
 name = "holium-macro"
-version = "1.0.0-alpha"
+version = "1.0.0-alpha.1"
 authors = ["Polyphene <contact@polyphene.io>"]
 edition = "2018"
 license = "MIT"
@@ -18,6 +18,6 @@ trybuild = "=1.0.49"
 holium-rs-sdk = { path="../sdk" }
 
 [dependencies]
-holium-macro-support={ path="../macro-support", version="1.0.0-alpha" }
+holium-macro-support={ path="../macro-support", version="1.0.0-alpha.1" }
 quote = "^1.0.9"
 serde = { version = "^1.0.125", features = ["derive"] }
