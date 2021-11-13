@@ -1,0 +1,23 @@
+[package]
+name = "holium-macro"
+version = "1.0.0-alpha"
+authors = ["Polyphene <contact@polyphene.io>"]
+edition = "2018"
+license = "MIT"
+description = "Procedural macro for the Holium Rust SDK."
+documentation = "https://docs.holium.org"
+homepage = "https://holium.org"
+repository = "https://github.com/polyphene/holium-rs-sdk"
+keywords = ["holium"]
+
+[lib]
+proc-macro = true
+
+[dev-dependencies]
+trybuild = "=1.0.49"
+holium-rs-sdk = { path="../sdk" }
+
+[dependencies]
+holium-macro-support={ path="../macro-support", version="1.0.0-alpha" }
+quote = "^1.0.9"
+serde = { version = "^1.0.125", features = ["derive"] }

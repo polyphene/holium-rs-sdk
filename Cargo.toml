@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "crates/macro-support",
+    "crates/macro",
+    "crates/backend",
+    "crates/sdk"
+]
