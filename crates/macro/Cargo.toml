@@ -18,6 +18,6 @@ trybuild = "=1.0.49"
 holium-rs-sdk = { path="../sdk" }
 
 [dependencies]
-holium-macro-support={ path="../macro-support" }
+holium-macro-support={ path="../macro-support", version="=1.0.0-alpha" }
 quote = "^1.0.9"
 serde = { version = "^1.0.125", features = ["derive"] }
