@@ -14,7 +14,7 @@ keywords = ["holium"]
 proc-macro = true
 
 [dev-dependencies]
-trybuild = "=1.0.49"
+trybuild = "^1.0.49"
 holium-rs-sdk = { path="../sdk" }
 
 [dependencies]
