@@ -48,8 +48,8 @@ impl ToTokens for ast::Struct {
 
         // Add derive for serialize & deserialize
         *into = (quote! {
-            #[derive(holium_rust_sdk::internal::serde::Serialize, holium_rust_sdk::internal::serde::Deserialize)]
-            #[serde( crate = "holium_rust_sdk::internal::serde")]
+            #[derive(holium_rs_sdk::internal::serde::Serialize, holium_rs_sdk::internal::serde::Deserialize)]
+            #[serde( crate = "holium_rs_sdk::internal::serde")]
             #into
         })
         .to_token_stream();
@@ -62,7 +62,7 @@ impl ToTokens for ast::Struct {
             let field_type = &field.ty;
 
             generate_node_children.push(quote! {
-                holium_rust_sdk::internal::key_tree::Node {
+                holium_rs_sdk::internal::key_tree::Node {
                     value: Some(#field_name),
                     children: <#field_type>::generate_node().children
                 }
@@ -72,9 +72,9 @@ impl ToTokens for ast::Struct {
         // Generating conversion from data_tree::Node to structure and implement key_tree::GenerateNode
         // trait
         (quote! {
-            impl holium_rust_sdk::internal::key_tree::GenerateNode for #name {
-                fn generate_node() -> holium_rust_sdk::internal::key_tree::Node {
-                    holium_rust_sdk::internal::key_tree::Node {
+            impl holium_rs_sdk::internal::key_tree::GenerateNode for #name {
+                fn generate_node() -> holium_rs_sdk::internal::key_tree::Node {
+                    holium_rs_sdk::internal::key_tree::Node {
                         value: None,
                         children: vec![
                             #(#generate_node_children),*
@@ -83,12 +83,12 @@ impl ToTokens for ast::Struct {
                 }
             }
 
-            impl From<holium_rust_sdk::internal::data_tree::Node> for #name {
-                fn from(data_tree: holium_rust_sdk::internal::data_tree::Node) -> Self {
+            impl From<holium_rs_sdk::internal::data_tree::Node> for #name {
+                fn from(data_tree: holium_rs_sdk::internal::data_tree::Node) -> Self {
                     let key_node = <#name>::generate_node();
                     let cbor = data_tree.assign_keys(&key_node);
                     let cbor_bytes: Vec<u8> = internal::serde_cbor::to_vec(&cbor).unwrap();
-                    holium_rust_sdk::internal::serde_cbor::from_slice(&cbor_bytes).unwrap()
+                    holium_rs_sdk::internal::serde_cbor::from_slice(&cbor_bytes).unwrap()
                 }
             }
         })
@@ -126,7 +126,7 @@ impl TryToTokens for ast::Export {
                         #field_ident: #elem
                     });
                     input_payload_node_children.push(quote! {
-                        holium_rust_sdk::internal::key_tree::Node {
+                        holium_rs_sdk::internal::key_tree::Node {
                             value: Some(#field),
                             children: <#elem>::generate_node().children
                         }
@@ -141,7 +141,7 @@ impl TryToTokens for ast::Export {
                         #field_ident: #elem
                     });
                     input_payload_node_children.push(quote! {
-                        holium_rust_sdk::internal::key_tree::Node {
+                        holium_rs_sdk::internal::key_tree::Node {
                             value: Some(#field),
                             children: <#elem>::generate_node().children
                         }
@@ -163,7 +163,7 @@ impl TryToTokens for ast::Export {
                         #field_ident: #ty
                     });
                     input_payload_node_children.push(quote! {
-                        holium_rust_sdk::internal::key_tree::Node {
+                        holium_rs_sdk::internal::key_tree::Node {
                             value: Some(#field),
                             children: <#ty>::generate_node().children
                         }
@@ -182,16 +182,16 @@ impl TryToTokens for ast::Export {
                 export_name = #exported_name,
             )]
             #[allow(clippy::all)]
-            pub extern "C" fn #holium_func_name(ptr: *mut u8, len: usize) -> holium_rust_sdk::internal::memory::Slice {
-                #[derive(holium_rust_sdk::internal::serde::Serialize, holium_rust_sdk::internal::serde::Deserialize)]
-                #[serde( crate = "holium_rust_sdk::internal::serde")]
+            pub extern "C" fn #holium_func_name(ptr: *mut u8, len: usize) -> holium_rs_sdk::internal::memory::Slice {
+                #[derive(holium_rs_sdk::internal::serde::Serialize, holium_rs_sdk::internal::serde::Deserialize)]
+                #[serde( crate = "holium_rs_sdk::internal::serde")]
                 struct InputPayload {
                     #(#input_payload_fields),*
                 }
 
-                impl holium_rust_sdk::internal::key_tree::GenerateNode for InputPayload {
-                    fn generate_node() -> holium_rust_sdk::internal::key_tree::Node {
-                        holium_rust_sdk::internal::key_tree::Node {
+                impl holium_rs_sdk::internal::key_tree::GenerateNode for InputPayload {
+                    fn generate_node() -> holium_rs_sdk::internal::key_tree::Node {
+                        holium_rs_sdk::internal::key_tree::Node {
                             value: None,
                             children: vec![
                                 #(#input_payload_node_children),*
@@ -200,28 +200,28 @@ impl TryToTokens for ast::Export {
                     }
                 }
 
-                impl From<holium_rust_sdk::internal::data_tree::Node> for InputPayload {
-                    fn from(data_tree: holium_rust_sdk::internal::data_tree::Node) -> Self {
+                impl From<holium_rs_sdk::internal::data_tree::Node> for InputPayload {
+                    fn from(data_tree: holium_rs_sdk::internal::data_tree::Node) -> Self {
                         let key_node = <InputPayload>::generate_node();
                         let cbor = data_tree.assign_keys(&key_node);
                         let cbor_bytes: Vec<u8> = internal::serde_cbor::to_vec(&cbor).unwrap();
-                        holium_rust_sdk::internal::serde_cbor::from_slice(&cbor_bytes).unwrap()
+                        holium_rs_sdk::internal::serde_cbor::from_slice(&cbor_bytes).unwrap()
                     }
                 }
 
                 let payload_u8: &[u8] = unsafe { std::slice::from_raw_parts(ptr, len) };
-                let data_node: holium_rust_sdk::internal::data_tree::Node = holium_rust_sdk::internal::serde_cbor::from_slice(payload_u8).unwrap();
+                let data_node: holium_rs_sdk::internal::data_tree::Node = holium_rs_sdk::internal::serde_cbor::from_slice(payload_u8).unwrap();
 
                 let input: InputPayload = data_node.into();
 
                 let output = #receiver(#(#converted_args),*);
 
-                let output_cbor = holium_rust_sdk::internal::serde_cbor::value::to_value(vec![output]).unwrap();
+                let output_cbor = holium_rs_sdk::internal::serde_cbor::value::to_value(vec![output]).unwrap();
 
-                let output_node = holium_rust_sdk::internal::data_tree::Node::new(output_cbor);
-                let output_node_u8 = holium_rust_sdk::internal::serde_cbor::to_vec(&output_node).unwrap();
+                let output_node = holium_rs_sdk::internal::data_tree::Node::new(output_cbor);
+                let output_node_u8 = holium_rs_sdk::internal::serde_cbor::to_vec(&output_node).unwrap();
 
-                holium_rust_sdk::internal::memory::Slice {
+                holium_rs_sdk::internal::memory::Slice {
                     ptr: output_node_u8.as_ptr() as u32,
                     len: output_node_u8.len() as u32
                 }

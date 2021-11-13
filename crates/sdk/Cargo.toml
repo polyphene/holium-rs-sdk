@@ -1,8 +1,14 @@
 [package]
-name = "holium-rust-sdk"
+name = "holium-rs-sdk"
 version = "1.0.0-alpha"
 authors = ["Polyphene <contact@polyphene.io>"]
 edition = "2018"
+license = "MIT"
+description = "Holium Rust SDK."
+documentation = "https://docs.holium.org"
+homepage = "https://holium.org"
+repository = "https://github.com/polyphene/holium-rs-sdk"
+keywords = ["holium"]
 
 [dependencies]
 anyhow = "^1.0.42"
