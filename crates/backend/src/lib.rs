@@ -1,3 +1,5 @@
+//! Backend crate for the Holium Rust SDK procedural macro.
+
 pub use crate::codegen::TryToTokens;
 pub use crate::error::Diagnostic;
 
