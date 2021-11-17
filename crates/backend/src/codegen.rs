@@ -52,7 +52,7 @@ impl ToTokens for ast::Struct {
             #[serde( crate = "holium_rs_sdk::internal::serde")]
             #into
         })
-        .to_token_stream();
+            .to_token_stream();
 
         // For each field of our structure add a new children node
         let mut generate_node_children: Vec<TokenStream> = vec![];
@@ -218,7 +218,7 @@ impl TryToTokens for ast::Export {
 
                 let output_cbor = holium_rs_sdk::internal::serde_cbor::value::to_value(vec![output]).unwrap();
 
-                let output_node = holium_rs_sdk::internal::data_tree::Node::new(output_cbor);
+                let output_node = holium_rs_sdk::internal::data_tree::Node::new(output_cbor).unwrap();
                 let output_node_u8 = holium_rs_sdk::internal::serde_cbor::to_vec(&output_node).unwrap();
 
                 holium_rs_sdk::internal::memory::Slice {
@@ -227,7 +227,7 @@ impl TryToTokens for ast::Export {
                 }
             }
         })
-        .to_tokens(into);
+            .to_tokens(into);
 
         Ok(())
     }
